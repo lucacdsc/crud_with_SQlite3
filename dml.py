@@ -1,35 +1,42 @@
 import sqlite3
 
+def commit_close(func):
+    def decorator(*args):
+        connection = sqlite3.connect('base.db')
+        cur = connection.cursor()
+        sql = func(*args)
+        cur.execute(sql)
+        connection.commit()
+        connection.close()
+    return decorator
 
-connection = sqlite3.connect('base.db')
-
-cur = connection.cursor()
-
+@commit_close
 def db_insert(name,contact,color):
     return """
 INSERT INTO users (name, contact, color) VALUES ('{}', '{}', '{}')
 """.format(name,contact,color)
 
+@commit_close
 def db_update(novo_valor,identifier):
     return """
 UPDATE users SET name = '{}' WHERE ID = {}
 """.format(novo_valor,identifier)
 
+
+@commit_close
 def db_delete(identifier):
     return """
     DELETE FROM users WHERE ID = {}
 """.format(identifier)
 
 def db_select(identifier):
-    return """
+    connection = sqlite3.connec('base.db')
+    cur = connection.cursor()
+    sql = """
 SELECT * FROM users WHERE ID = {}
 """.format(identifier)
+    cur.execute(sql)
+    data = cur.fetchall()
+    connection.close()
+    return data
 
-#cur.execute(db_insert('Mingau','974164619','blue'))
-#cur.execute(db_update('lcdsc',1))
-#cur.execute(db_delete(2))
-cur.execute(db_select(1))
-#connection.commit()
-data = cur.fetchone()
-connection.close()
-print(data)
